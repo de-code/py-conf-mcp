@@ -7,5 +7,6 @@ toolDefinitions:
         Fetches a random programming joke.
 
 server:
+  name: 'Test MCP server'
   tools:
     - get_joke

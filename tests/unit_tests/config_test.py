@@ -33,6 +33,7 @@ TOOL_DEFINITIONS_CONFIG_DICT_1: ToolDefinitionsConfigDict = {
 
 
 SERVER_CONFIG_DICT_1: ServerConfigDict = {
+    'name': 'Test MCP Server',
     'tools': ['tool_1', 'tool_2']
 }
 
@@ -79,14 +80,18 @@ class TestToolDefinitionsConfig:
         assert bool(tool_config) is True
 
 
-class TestAgentConfig:
+class TestServerConfig:
+    def test_should_load_name(self):
+        agent_config = ServerConfig.from_dict(SERVER_CONFIG_DICT_1)
+        assert agent_config.name == SERVER_CONFIG_DICT_1['name']
+
     def test_should_load_tools(self):
         agent_config = ServerConfig.from_dict(SERVER_CONFIG_DICT_1)
         assert agent_config.tools == SERVER_CONFIG_DICT_1['tools']
 
 
 class TestAppConfig:
-    def test_should_load_agent(self):
+    def test_should_load_server_config(self):
         app_config = AppConfig.from_dict(APP_CONFIG_DICT_1)
         assert app_config.server == ServerConfig.from_dict(APP_CONFIG_DICT_1['server'])
 

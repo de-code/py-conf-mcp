@@ -23,8 +23,10 @@ class TestCreateMcpForAppConfig:
                 ]
             ),
             server=ServerConfig(
+                name='Test MCP Server',
                 tools=['tool_1']
             )
         ))
+        assert mcp.name == 'Test MCP Server'
         tools = await mcp.get_tools()
         assert tools

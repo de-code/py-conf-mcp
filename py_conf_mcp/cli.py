@@ -16,7 +16,7 @@ def create_mcp_for_app_config(app_config: AppConfig) -> FastMCP:
     tools = tool_resolver.get_tools_by_name(app_config.server.tools)
     LOGGER.info('Tools: %r', tools)
 
-    mcp: FastMCP = FastMCP('Demo MCP')
+    mcp: FastMCP = FastMCP(app_config.server.name)
 
     for tool in tools:
         mcp.add_tool(

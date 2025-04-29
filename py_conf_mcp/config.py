@@ -62,12 +62,14 @@ class ToolDefinitionsConfig:
 
 @dataclass(frozen=True)
 class ServerConfig:
+    name: str
     tools: Sequence[str]
 
     @staticmethod
-    def from_dict(agent_config_dict: ServerConfigDict) -> 'ServerConfig':
+    def from_dict(server_config_dict: ServerConfigDict) -> 'ServerConfig':
         return ServerConfig(
-            tools=agent_config_dict['tools']
+            name=server_config_dict['name'],
+            tools=server_config_dict['tools']
         )
 
 
