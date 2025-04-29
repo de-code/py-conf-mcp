@@ -13,6 +13,7 @@ class ToolDefinitionsConfigDict(TypedDict):
 
 
 class ServerConfigDict(TypedDict):
+    name: str
     tools: Sequence[str]
 
 
