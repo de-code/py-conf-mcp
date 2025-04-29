@@ -1,0 +1,5 @@
+services:
+    py-conf-mcp:
+        build:
+            context: .
+        image: ${IMAGE_REPO}:${IMAGE_TAG}
