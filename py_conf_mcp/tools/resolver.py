@@ -6,6 +6,7 @@ import logging
 from typing import Any, Callable, Mapping, Optional, Sequence
 
 from py_conf_mcp.config import (
+    FromPythonClassConfig,
     FromPythonFunctionConfig,
     ToolDefinitionsConfig
 )
@@ -68,14 +69,34 @@ def get_tool_from_python_tool_instance(
     )
 
 
+def get_tool_from_python_class(
+    config: FromPythonClassConfig
+) -> Tool:
+    tool_module = importlib.import_module(config.module)
+    tool_class = getattr(tool_module, config.class_name)
+    assert isinstance(tool_class, type)
+    tool = tool_class(**config.init_parameters)
+    assert callable(tool)
+    return Tool(
+        tool_fn=tool,
+        name=config.name,
+        description=config.description
+    )
+
+
 @dataclass(frozen=True)
 class ConfigToolResolver(ToolResolver):
     tool_definitions_config: ToolDefinitionsConfig
 
     def get_tool_by_name(self, tool_name: str) -> Tool:
-        for from_python_tool_instance_config in (
+        for from_python_function_config in (
             self.tool_definitions_config.from_python_function
         ):
-            if from_python_tool_instance_config.name == tool_name:
-                return get_tool_from_python_tool_instance(from_python_tool_instance_config)
+            if from_python_function_config.name == tool_name:
+                return get_tool_from_python_tool_instance(from_python_function_config)
+        for from_python_class_config in (
+            self.tool_definitions_config.from_python_class
+        ):
+            if from_python_class_config.name == tool_name:
+                return get_tool_from_python_class(from_python_class_config)
         raise InvalidToolNameError(f'Unrecognised tool: {repr(tool_name)}')
