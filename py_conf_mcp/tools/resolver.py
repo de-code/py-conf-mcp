@@ -76,6 +76,7 @@ def get_tool_from_python_class(
     tool_class = getattr(tool_module, config.class_name)
     assert isinstance(tool_class, type)
     tool = tool_class(**config.init_parameters)
+    tool.__name__ = config.name
     assert callable(tool)
     return Tool(
         tool_fn=tool,
