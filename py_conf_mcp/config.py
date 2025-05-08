@@ -8,6 +8,7 @@ import yaml
 from py_conf_mcp.config_typing import (
     FromPythonClassConfigDict,
     FromPythonFunctionConfigDict,
+    InputConfigDict,
     ServerConfigDict,
     AppConfigDict,
     ToolDefinitionsConfigDict
@@ -47,6 +48,7 @@ class FromPythonClassConfig:
     class_name: str
     description: Optional[str] = None
     init_parameters: Mapping[str, Any] = field(default_factory=dict)
+    inputs: Mapping[str, InputConfigDict] = field(default_factory=dict)
 
     @staticmethod
     def from_dict(
@@ -57,7 +59,8 @@ class FromPythonClassConfig:
             module=from_python_class_config_dict['module'],
             class_name=from_python_class_config_dict['className'],
             description=from_python_class_config_dict.get('description'),
-            init_parameters=from_python_class_config_dict.get('initParameters', {})
+            init_parameters=from_python_class_config_dict.get('initParameters', {}),
+            inputs=from_python_class_config_dict.get('inputs', {})
         )
 
 
