@@ -1,4 +1,4 @@
-from typing import NotRequired, Sequence, TypedDict
+from typing import Any, Mapping, NotRequired, Sequence, TypedDict
 
 
 class FromPythonFunctionConfigDict(TypedDict):
@@ -8,8 +8,17 @@ class FromPythonFunctionConfigDict(TypedDict):
     description: NotRequired[str]
 
 
+class FromPythonClassConfigDict(TypedDict):
+    name: str
+    module: str
+    className: str
+    description: NotRequired[str]
+    initParameters: NotRequired[Mapping[str, Any]]
+
+
 class ToolDefinitionsConfigDict(TypedDict):
     fromPythonFunction: NotRequired[Sequence[FromPythonFunctionConfigDict]]
+    fromPythonClass: NotRequired[Sequence[FromPythonClassConfigDict]]
 
 
 class ServerConfigDict(TypedDict):
