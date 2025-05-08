@@ -62,3 +62,21 @@ class TestWebApiTool:
             url=URL_1
         )
         assert tool() == requests_response_mock.json.return_value
+
+    def test_should_replace_placeholders_in_query_parameters(
+        self,
+        requests_request_fn_mock: MagicMock
+    ):
+        tool = WebApiTool(
+            url=r'https://example/url_1',
+            query_parameters={
+                'param_1': r'{{ param_1 }}'
+            }
+        )
+        tool(param_1='value_1')
+        requests_request_fn_mock.assert_called_with(
+            method='GET',
+            url=r'https://example/url_1',
+            params={'param_1': 'value_1'},
+            headers=ANY
+        )
