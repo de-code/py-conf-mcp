@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
 import logging
 import os
-from typing import Optional, Sequence
+from typing import Any, Mapping, Optional, Sequence
 
 import yaml
 
 from py_conf_mcp.config_typing import (
+    FromPythonClassConfigDict,
     FromPythonFunctionConfigDict,
     ServerConfigDict,
     AppConfigDict,
@@ -29,19 +30,41 @@ class FromPythonFunctionConfig:
 
     @staticmethod
     def from_dict(
-        from_python_tool_instance_config_dict: FromPythonFunctionConfigDict
+        from_python_function_config_dict: FromPythonFunctionConfigDict
     ) -> 'FromPythonFunctionConfig':
         return FromPythonFunctionConfig(
-            name=from_python_tool_instance_config_dict['name'],
-            module=from_python_tool_instance_config_dict['module'],
-            key=from_python_tool_instance_config_dict['key'],
-            description=from_python_tool_instance_config_dict.get('description')
+            name=from_python_function_config_dict['name'],
+            module=from_python_function_config_dict['module'],
+            key=from_python_function_config_dict['key'],
+            description=from_python_function_config_dict.get('description')
+        )
+
+
+@dataclass(frozen=True)
+class FromPythonClassConfig:
+    name: str
+    module: str
+    class_name: str
+    description: Optional[str] = None
+    init_parameters: Mapping[str, Any] = field(default_factory=dict)
+
+    @staticmethod
+    def from_dict(
+        from_python_class_config_dict: FromPythonClassConfigDict
+    ) -> 'FromPythonClassConfig':
+        return FromPythonClassConfig(
+            name=from_python_class_config_dict['name'],
+            module=from_python_class_config_dict['module'],
+            class_name=from_python_class_config_dict['className'],
+            description=from_python_class_config_dict.get('description'),
+            init_parameters=from_python_class_config_dict.get('initParameters', {})
         )
 
 
 @dataclass(frozen=True)
 class ToolDefinitionsConfig:
     from_python_function: Sequence[FromPythonFunctionConfig] = field(default_factory=list)
+    from_python_class: Sequence[FromPythonClassConfig] = field(default_factory=list)
 
     @staticmethod
     def from_dict(
@@ -51,12 +74,17 @@ class ToolDefinitionsConfig:
             from_python_function=list(map(
                 FromPythonFunctionConfig.from_dict,
                 tool_definitions_config_dict.get('fromPythonFunction', [])
+            )),
+            from_python_class=list(map(
+                FromPythonClassConfig.from_dict,
+                tool_definitions_config_dict.get('fromPythonClass', [])
             ))
         )
 
     def __bool__(self) -> bool:
         return bool(
             self.from_python_function
+            or self.from_python_class
         )
 
 

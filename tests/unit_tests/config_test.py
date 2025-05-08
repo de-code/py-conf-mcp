@@ -3,6 +3,7 @@ from pathlib import Path
 import yaml
 
 from py_conf_mcp.config import (
+    FromPythonClassConfig,
     ServerConfig,
     AppConfig,
     EnvironmentVariables,
@@ -11,6 +12,7 @@ from py_conf_mcp.config import (
     load_app_config
 )
 from py_conf_mcp.config_typing import (
+    FromPythonClassConfigDict,
     ServerConfigDict,
     AppConfigDict,
     FromPythonFunctionConfigDict,
@@ -22,6 +24,13 @@ FROM_PYTHON_FUNCTION_CONFIG_DICT_1: FromPythonFunctionConfigDict = {
     'name': 'tool_1',
     'module': 'tool_module_1',
     'key': 'tool_key_1'
+}
+
+
+FROM_PYTHON_CLASS_CONFIG_DICT_1: FromPythonClassConfigDict = {
+    'name': 'tool_1',
+    'module': 'tool_module_1',
+    'className': 'tool_class_1'
 }
 
 
@@ -60,13 +69,42 @@ class TestFromPythonFunctionConfig:
         assert tool_config.description == 'Description 1'
 
 
+class TestFromPythonClassConfig:
+    def test_should_load_tool_config(self):
+        tool_config = FromPythonClassConfig.from_dict(
+            FROM_PYTHON_CLASS_CONFIG_DICT_1
+        )
+        assert tool_config.name == FROM_PYTHON_CLASS_CONFIG_DICT_1['name']
+        assert tool_config.module == FROM_PYTHON_CLASS_CONFIG_DICT_1['module']
+        assert tool_config.class_name == FROM_PYTHON_CLASS_CONFIG_DICT_1['className']
+        assert tool_config.init_parameters == {}
+
+    def test_should_load_description(self):
+        tool_config = FromPythonClassConfig.from_dict({
+            **FROM_PYTHON_CLASS_CONFIG_DICT_1,
+            'description': 'Description 1'
+        })
+        assert tool_config.description == 'Description 1'
+
+    def test_should_load_init_parameters(self):
+        tool_config = FromPythonClassConfig.from_dict({
+            **FROM_PYTHON_CLASS_CONFIG_DICT_1,
+            'initParameters': {
+                'param_1': 'value_1'
+            }
+        })
+        assert tool_config.init_parameters == {
+            'param_1': 'value_1'
+        }
+
+
 class TestToolDefinitionsConfig:
     def test_should_be_falsy_if_empty(self):
         tool_config = ToolDefinitionsConfig.from_dict({
         })
         assert bool(tool_config) is False
 
-    def test_should_load_tool_config(self):
+    def test_should_load_tool_config_from_python_function(self):
         tool_config = ToolDefinitionsConfig.from_dict({
             'fromPythonFunction': [
                 FROM_PYTHON_FUNCTION_CONFIG_DICT_1
@@ -75,6 +113,19 @@ class TestToolDefinitionsConfig:
         assert tool_config.from_python_function == [
             FromPythonFunctionConfig.from_dict(
                 FROM_PYTHON_FUNCTION_CONFIG_DICT_1
+            )
+        ]
+        assert bool(tool_config) is True
+
+    def test_should_load_tool_config_from_python_class(self):
+        tool_config = ToolDefinitionsConfig.from_dict({
+            'fromPythonClass': [
+                FROM_PYTHON_CLASS_CONFIG_DICT_1
+            ]
+        })
+        assert tool_config.from_python_class == [
+            FromPythonClassConfig.from_dict(
+                FROM_PYTHON_CLASS_CONFIG_DICT_1
             )
         ]
         assert bool(tool_config) is True
