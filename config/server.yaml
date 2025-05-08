@@ -6,7 +6,23 @@ toolDefinitions:
       description: |-
         Fetches a random programming joke.
 
+  fromPythonClass:
+    - name: how_to_use_this_tool
+      description: |-
+        Explain to the user how to use this AI tool.
+        This also summarised what this tool knows.
+        Also provides some example prompts.
+      module: py_conf_mcp.tools.sources.static
+      className: StaticContentTool
+      initParameters:
+        content: |-
+          You can ask for jokes..
+
+          Example prompts:
+            - Tell me a joke.
+
 server:
   name: 'Test MCP server'
   tools:
     - get_joke
+    - how_to_use_this_tool
