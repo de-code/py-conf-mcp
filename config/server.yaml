@@ -21,8 +21,17 @@ toolDefinitions:
           Example prompts:
             - Tell me a joke.
 
+    - name: get_joke_via_web_api
+      description: |-
+        Fetches a random programming joke.
+      module: py_conf_mcp.tools.sources.web_api
+      className: WebApiTool
+      initParameters:
+        url: 'https://v2.jokeapi.dev/joke/Programming?type=single&safe-mode&blacklistFlags=nsfw'
+
 server:
   name: 'Test MCP server'
   tools:
     - get_joke
     - how_to_use_this_tool
+    - get_joke_via_web_api
