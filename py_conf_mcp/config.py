@@ -30,13 +30,13 @@ class FromPythonFunctionConfig:
 
     @staticmethod
     def from_dict(
-        from_python_tool_instance_config_dict: FromPythonFunctionConfigDict
+        from_python_function_config_dict: FromPythonFunctionConfigDict
     ) -> 'FromPythonFunctionConfig':
         return FromPythonFunctionConfig(
-            name=from_python_tool_instance_config_dict['name'],
-            module=from_python_tool_instance_config_dict['module'],
-            key=from_python_tool_instance_config_dict['key'],
-            description=from_python_tool_instance_config_dict.get('description')
+            name=from_python_function_config_dict['name'],
+            module=from_python_function_config_dict['module'],
+            key=from_python_function_config_dict['key'],
+            description=from_python_function_config_dict.get('description')
         )
 
 
