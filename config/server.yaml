@@ -23,7 +23,7 @@ toolDefinitions:
 
     - name: get_joke_via_web_api
       description: |-
-        Fetches a random programming joke.
+        Fetches a random joke.
       module: py_conf_mcp.tools.sources.web_api
       className: WebApiTool
       initParameters:
