@@ -50,7 +50,10 @@ class WebApiTool(ToolClass):
             self.query_parameters,
             kwargs
         )
-        LOGGER.info('url: %r (method: %r, params: %r)', url, self.method, params)
+        LOGGER.info(
+            'url: %r (method: %r, params: %r, kwargs: %r)',
+            url, self.method, params, kwargs
+        )
         response = session.request(
             method=self.method,
             url=url,
