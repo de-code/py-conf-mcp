@@ -27,7 +27,11 @@ toolDefinitions:
       module: py_conf_mcp.tools.sources.web_api
       className: WebApiTool
       initParameters:
-        url: 'https://v2.jokeapi.dev/joke/Programming?type=single&safe-mode&blacklistFlags=nsfw'
+        url: 'https://v2.jokeapi.dev/joke/{{ category }}?type=single&safe-mode&blacklistFlags=nsfw'
+      inputs:
+        category:
+          type: str
+          default: 'Programming'
 
 server:
   name: 'Test MCP server'
