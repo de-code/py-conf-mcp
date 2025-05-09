@@ -45,7 +45,7 @@ class WebApiTool(ToolClass):
 
     def __call__(self, **kwargs):
         session = get_requests_session()
-        url = self.url
+        url = get_evaluated_template(self.url, kwargs)
         params = get_evaluated_query_parameters(
             self.query_parameters,
             kwargs
