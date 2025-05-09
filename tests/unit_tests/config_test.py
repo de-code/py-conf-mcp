@@ -78,6 +78,7 @@ class TestFromPythonClassConfig:
         assert tool_config.module == FROM_PYTHON_CLASS_CONFIG_DICT_1['module']
         assert tool_config.class_name == FROM_PYTHON_CLASS_CONFIG_DICT_1['className']
         assert tool_config.init_parameters == {}
+        assert tool_config.inputs == {}
 
     def test_should_load_description(self):
         tool_config = FromPythonClassConfig.from_dict({
@@ -95,6 +96,28 @@ class TestFromPythonClassConfig:
         })
         assert tool_config.init_parameters == {
             'param_1': 'value_1'
+        }
+
+    def test_should_load_minimal_inputs(self):
+        tool_config = FromPythonClassConfig.from_dict({
+            **FROM_PYTHON_CLASS_CONFIG_DICT_1,
+            'inputs': {
+                'param_1': {'type': 'str'}
+            }
+        })
+        assert tool_config.inputs == {
+            'param_1': {'type': 'str'}
+        }
+
+    def test_should_load_inputs_with_additional_fields(self):
+        tool_config = FromPythonClassConfig.from_dict({
+            **FROM_PYTHON_CLASS_CONFIG_DICT_1,
+            'inputs': {
+                'param_1': {'type': 'str', 'default': 'default_value_1'}
+            }
+        })
+        assert tool_config.inputs == {
+            'param_1': {'type': 'str', 'default': 'default_value_1'}
         }
 
 

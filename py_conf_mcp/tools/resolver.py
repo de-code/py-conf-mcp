@@ -1,15 +1,19 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import functools
 import importlib
 import inspect
 import logging
-from typing import Any, Callable, Mapping, Optional, Sequence
+from typing import Any, Callable, Literal, Mapping, Optional, Sequence
+
+import pydantic
 
 from py_conf_mcp.config import (
     FromPythonClassConfig,
     FromPythonFunctionConfig,
     ToolDefinitionsConfig
 )
+from py_conf_mcp.config_typing import InputConfigDict
 
 
 LOGGER = logging.getLogger(__name__)
@@ -69,17 +73,71 @@ def get_tool_from_python_tool_instance(
     )
 
 
+def get_inspect_parameter_annotation_for_input_config_dict(
+    input_config_dict: InputConfigDict
+) -> Any:
+    enum = input_config_dict.get('enum')
+    if enum:
+        return Literal[tuple(enum)]
+    return input_config_dict.get('type')
+
+
+def get_inspect_parameter_for_input_config_dict(
+    input_name: str,
+    input_config_dict: InputConfigDict
+) -> inspect.Parameter:
+    return inspect.Parameter(
+        name=input_name,
+        kind=inspect.Parameter.KEYWORD_ONLY,
+        annotation=get_inspect_parameter_annotation_for_input_config_dict(
+            input_config_dict
+        ),
+        default=pydantic.Field(
+            input_config_dict.get('default', ...),
+            title=input_config_dict.get('title'),
+            description=input_config_dict.get('description')
+        )
+    )
+
+
+def get_tool_function_with_dynamic_parameters(
+    tool_fn: Callable,
+    inputs: Mapping[str, InputConfigDict]
+) -> Callable:
+    LOGGER.info('inputs: %r', inputs)
+
+    @functools.wraps(tool_fn)
+    def wrapper(**kwargs):
+        return tool_fn(**kwargs)
+
+    parameters = [
+        get_inspect_parameter_for_input_config_dict(
+            input_name=input_name,
+            input_config_dict=input_config_dict
+        )
+        for input_name, input_config_dict in inputs.items()
+    ]
+    wrapper.__signature__ = inspect.Signature(parameters)  # type: ignore[attr-defined]
+
+    return wrapper
+
+
 def get_tool_from_python_class(
     config: FromPythonClassConfig
 ) -> Tool:
     tool_module = importlib.import_module(config.module)
     tool_class = getattr(tool_module, config.class_name)
     assert isinstance(tool_class, type)
-    tool = tool_class(**config.init_parameters)
-    tool.__name__ = config.name
-    assert callable(tool)
+    tool_fn = tool_class(**config.init_parameters)
+    tool_fn.__name__ = config.name
+    assert callable(tool_fn)
+    if config.inputs:
+        tool_fn = get_tool_function_with_dynamic_parameters(
+            tool_fn,
+            config.inputs
+        )
     return Tool(
-        tool_fn=tool,
+        tool_fn=tool_fn,
         name=config.name,
         description=config.description
     )

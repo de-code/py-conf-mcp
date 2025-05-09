@@ -1,4 +1,8 @@
+import dataclasses
+from unittest.mock import ANY
 import pytest
+
+from fastmcp.utilities.func_metadata import func_metadata
 
 from py_conf_mcp.config import (
     FromPythonClassConfig,
@@ -6,7 +10,21 @@ from py_conf_mcp.config import (
     ToolDefinitionsConfig
 )
 from py_conf_mcp.tools.example.joke import get_joke
-from py_conf_mcp.tools.resolver import ConfigToolResolver
+from py_conf_mcp.tools.resolver import (
+    ConfigToolResolver,
+    get_tool_from_python_class,
+    get_tool_function_with_dynamic_parameters
+)
+
+
+FROM_PYTHON_CLASS_CONFIG_1 = FromPythonClassConfig(
+    name='get_static_content',
+    module='py_conf_mcp.tools.sources.static',
+    class_name='StaticContentTool',
+    init_parameters={
+        'content': 'Static content'
+    }
+)
 
 
 DEFAULT_TOOL_DEFINITIONS_CONFIG: ToolDefinitionsConfig = ToolDefinitionsConfig(
@@ -17,21 +35,113 @@ DEFAULT_TOOL_DEFINITIONS_CONFIG: ToolDefinitionsConfig = ToolDefinitionsConfig(
             key='get_joke'
         )
     ],
-    from_python_class=[
-        FromPythonClassConfig(
-            name='get_static_content',
-            module='py_conf_mcp.tools.sources.static',
-            class_name='StaticContentTool',
-            init_parameters={
-                'content': 'Static content'
-            }
-        )
-    ]
+    from_python_class=[FROM_PYTHON_CLASS_CONFIG_1]
 )
 
 DEFAULT_CONFIG_TOOL_RESOLVER = ConfigToolResolver(
     tool_definitions_config=DEFAULT_TOOL_DEFINITIONS_CONFIG
 )
+
+
+class TestGetToolFunctionWithDynamicParameters:
+    def test_should_return_wrapper_dynamic_parameters(
+        self
+    ):
+        def _test_function(**kwargs):
+            return kwargs
+
+        tool_fn = get_tool_function_with_dynamic_parameters(
+            _test_function,
+            inputs={
+                'param_1': {
+                    'type': 'str',
+                    'default': 'default_value_1'
+                }
+            }
+        )
+        meta = func_metadata(tool_fn)
+        properties_dict = meta.arg_model.model_json_schema()['properties']
+        assert properties_dict == {
+            'param_1': {
+                'type': 'string',
+                'default': 'default_value_1',
+                'title': ANY
+            }
+        }
+
+    def test_should_return_wrapper_with_enum(
+        self
+    ):
+        def _test_function(**kwargs):
+            return kwargs
+
+        tool_fn = get_tool_function_with_dynamic_parameters(
+            _test_function,
+            inputs={
+                'param_1': {
+                    'type': 'str',
+                    'default': 'default_value_1',
+                    'enum': ['value_1', 'value_2']
+                }
+            }
+        )
+        meta = func_metadata(tool_fn)
+        properties_dict = meta.arg_model.model_json_schema()['properties']
+        assert properties_dict == {
+            'param_1': {
+                'type': 'string',
+                'default': 'default_value_1',
+                'enum': ['value_1', 'value_2'],
+                'title': ANY
+            }
+        }
+
+    def test_should_return_wrapper_with_title_and_description(
+        self
+    ):
+        def _test_function(**kwargs):
+            return kwargs
+
+        tool_fn = get_tool_function_with_dynamic_parameters(
+            _test_function,
+            inputs={
+                'param_1': {
+                    'type': 'str',
+                    'default': 'default_value_1',
+                    'enum': ['value_1', 'value_2'],
+                    'title': 'Parameter 1',
+                    'description': 'Description of parameter 1'
+                }
+            }
+        )
+        meta = func_metadata(tool_fn)
+        properties_dict = meta.arg_model.model_json_schema()['properties']
+        assert properties_dict == {
+            'param_1': {
+                'type': 'string',
+                'default': 'default_value_1',
+                'enum': ['value_1', 'value_2'],
+                'title': 'Parameter 1',
+                'description': 'Description of parameter 1'
+            }
+        }
+
+
+class TestFromPythonClassConfig:
+    def test_should_load_from_class(self):
+        tool = get_tool_from_python_class(FROM_PYTHON_CLASS_CONFIG_1)
+        assert tool.tool_fn.__name__ == FROM_PYTHON_CLASS_CONFIG_1.name
+
+    def test_should_load_from_class_with_dynamic_parameters(
+        self
+    ):
+        tool = get_tool_from_python_class(dataclasses.replace(
+            FROM_PYTHON_CLASS_CONFIG_1,
+            inputs={'param_1': {'type': 'str'}}
+        ))
+        meta = func_metadata(tool.tool_fn)
+        properties_dict = meta.arg_model.model_json_schema()['properties']
+        assert properties_dict.keys() == {'param_1'}
 
 
 class TestConfigToolResolver:

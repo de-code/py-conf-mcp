@@ -1,6 +1,14 @@
 from typing import Any, Mapping, NotRequired, Sequence, TypedDict
 
 
+class InputConfigDict(TypedDict):
+    type: Any
+    default: NotRequired[Any]
+    enum: NotRequired[Sequence[Any]]
+    title: NotRequired[str]
+    description: NotRequired[str]
+
+
 class FromPythonFunctionConfigDict(TypedDict):
     name: str
     module: str
@@ -14,6 +22,7 @@ class FromPythonClassConfigDict(TypedDict):
     className: str
     description: NotRequired[str]
     initParameters: NotRequired[Mapping[str, Any]]
+    inputs: NotRequired[Mapping[str, InputConfigDict]]
 
 
 class ToolDefinitionsConfigDict(TypedDict):
