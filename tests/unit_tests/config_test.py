@@ -98,7 +98,7 @@ class TestFromPythonClassConfig:
             'param_1': 'value_1'
         }
 
-    def test_should_load_inputs(self):
+    def test_should_load_minimal_inputs(self):
         tool_config = FromPythonClassConfig.from_dict({
             **FROM_PYTHON_CLASS_CONFIG_DICT_1,
             'inputs': {
@@ -107,6 +107,17 @@ class TestFromPythonClassConfig:
         })
         assert tool_config.inputs == {
             'param_1': {'type': 'str'}
+        }
+
+    def test_should_load_inputs_with_additional_fields(self):
+        tool_config = FromPythonClassConfig.from_dict({
+            **FROM_PYTHON_CLASS_CONFIG_DICT_1,
+            'inputs': {
+                'param_1': {'type': 'str', 'default': 'default_value_1'}
+            }
+        })
+        assert tool_config.inputs == {
+            'param_1': {'type': 'str', 'default': 'default_value_1'}
         }
 
 

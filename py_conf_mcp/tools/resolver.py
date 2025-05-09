@@ -86,6 +86,7 @@ def get_tool_function_with_dynamic_parameters(
             name=input_name,
             kind=inspect.Parameter.KEYWORD_ONLY,
             annotation=input_config_dict['type'],
+            default=input_config_dict.get('default', inspect.Parameter.empty)
         )
         for input_name, input_config_dict in inputs.items()
     ]

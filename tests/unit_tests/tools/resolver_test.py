@@ -51,10 +51,13 @@ class TestGetToolFunctionWithDynamicParameters:
 
         tool_fn = get_tool_function_with_dynamic_parameters(
             _test_function,
-            inputs={'param_1': {'type': 'str'}}
+            inputs={'param_1': {'type': 'str', 'default': 'default_value_1'}}
         )
         meta = func_metadata(tool_fn)
-        assert meta.arg_model.model_json_schema()['properties'].keys() == {'param_1'}
+        properties_dict = meta.arg_model.model_json_schema()['properties']
+        assert properties_dict.keys() == {'param_1'}
+        assert properties_dict['param_1']['type'] == 'string'
+        assert properties_dict['param_1']['default'] == 'default_value_1'
 
 
 class TestFromPythonClassConfig:
@@ -62,7 +65,7 @@ class TestFromPythonClassConfig:
         tool = get_tool_from_python_class(FROM_PYTHON_CLASS_CONFIG_1)
         assert tool.tool_fn.__name__ == FROM_PYTHON_CLASS_CONFIG_1.name
 
-    def _test_should_load_from_class_with_dynamic_parameters(
+    def test_should_load_from_class_with_dynamic_parameters(
         self
     ):
         tool = get_tool_from_python_class(dataclasses.replace(
@@ -70,7 +73,8 @@ class TestFromPythonClassConfig:
             inputs={'param_1': {'type': 'str'}}
         ))
         meta = func_metadata(tool.tool_fn)
-        assert meta.arg_model.model_json_schema()['properties'].keys() == {'param_1'}
+        properties_dict = meta.arg_model.model_json_schema()['properties']
+        assert properties_dict.keys() == {'param_1'}
 
 
 class TestConfigToolResolver:

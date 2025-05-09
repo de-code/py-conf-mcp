@@ -3,6 +3,7 @@ from typing import Any, Mapping, NotRequired, Sequence, TypedDict
 
 class InputConfigDict(TypedDict):
     type: Any
+    default: NotRequired[Any]
 
 
 class FromPythonFunctionConfigDict(TypedDict):
