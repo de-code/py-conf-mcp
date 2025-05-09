@@ -34,6 +34,7 @@ toolDefinitions:
           default: 'Programming'
           # Note: 'Spooky' and 'Christmas' are not available in the API as single joke types
           enum:
+            - Any
             - Programming
             - Misc
             - Dark
