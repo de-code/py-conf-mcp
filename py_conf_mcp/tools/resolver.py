@@ -4,7 +4,7 @@ import functools
 import importlib
 import inspect
 import logging
-from typing import Any, Callable, Mapping, Optional, Sequence
+from typing import Any, Callable, Literal, Mapping, Optional, Sequence
 
 from py_conf_mcp.config import (
     FromPythonClassConfig,
@@ -71,6 +71,29 @@ def get_tool_from_python_tool_instance(
     )
 
 
+def get_inspect_parameter_annotation_for_input_config_dict(
+    input_config_dict: InputConfigDict
+) -> Any:
+    enum = input_config_dict.get('enum')
+    if enum:
+        return Literal[tuple(enum)]
+    return input_config_dict.get('type')
+
+
+def get_inspect_parameter_for_input_config_dict(
+    input_name: str,
+    input_config_dict: InputConfigDict
+) -> inspect.Parameter:
+    return inspect.Parameter(
+        name=input_name,
+        kind=inspect.Parameter.KEYWORD_ONLY,
+        annotation=get_inspect_parameter_annotation_for_input_config_dict(
+            input_config_dict
+        ),
+        default=input_config_dict.get('default', inspect.Parameter.empty)
+    )
+
+
 def get_tool_function_with_dynamic_parameters(
     tool_fn: Callable,
     inputs: Mapping[str, InputConfigDict]
@@ -82,11 +105,9 @@ def get_tool_function_with_dynamic_parameters(
         return tool_fn(**kwargs)
 
     parameters = [
-        inspect.Parameter(
-            name=input_name,
-            kind=inspect.Parameter.KEYWORD_ONLY,
-            annotation=input_config_dict['type'],
-            default=input_config_dict.get('default', inspect.Parameter.empty)
+        get_inspect_parameter_for_input_config_dict(
+            input_name=input_name,
+            input_config_dict=input_config_dict
         )
         for input_name, input_config_dict in inputs.items()
     ]

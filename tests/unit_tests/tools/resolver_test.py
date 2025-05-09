@@ -1,4 +1,5 @@
 import dataclasses
+from unittest.mock import ANY
 import pytest
 
 from fastmcp.utilities.func_metadata import func_metadata
@@ -60,9 +61,40 @@ class TestGetToolFunctionWithDynamicParameters:
         )
         meta = func_metadata(tool_fn)
         properties_dict = meta.arg_model.model_json_schema()['properties']
-        assert properties_dict.keys() == {'param_1'}
-        assert properties_dict['param_1']['type'] == 'string'
-        assert properties_dict['param_1']['default'] == 'default_value_1'
+        assert properties_dict == {
+            'param_1': {
+                'type': 'string',
+                'default': 'default_value_1',
+                'title': ANY
+            }
+        }
+
+    def test_should_return_wrapper_with_enum(
+        self
+    ):
+        def _test_function(**kwargs):
+            return kwargs
+
+        tool_fn = get_tool_function_with_dynamic_parameters(
+            _test_function,
+            inputs={
+                'param_1': {
+                    'type': 'str',
+                    'default': 'default_value_1',
+                    'enum': ['value_1', 'value_2']
+                }
+            }
+        )
+        meta = func_metadata(tool_fn)
+        properties_dict = meta.arg_model.model_json_schema()['properties']
+        assert properties_dict == {
+            'param_1': {
+                'type': 'string',
+                'default': 'default_value_1',
+                'enum': ['value_1', 'value_2'],
+                'title': ANY
+            }
+        }
 
 
 class TestFromPythonClassConfig:

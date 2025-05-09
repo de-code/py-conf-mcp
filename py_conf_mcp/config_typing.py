@@ -4,6 +4,7 @@ from typing import Any, Mapping, NotRequired, Sequence, TypedDict
 class InputConfigDict(TypedDict):
     type: Any
     default: NotRequired[Any]
+    enum: NotRequired[Sequence[Any]]
 
 
 class FromPythonFunctionConfigDict(TypedDict):
