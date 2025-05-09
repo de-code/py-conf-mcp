@@ -96,6 +96,36 @@ class TestGetToolFunctionWithDynamicParameters:
             }
         }
 
+    def test_should_return_wrapper_with_title_and_description(
+        self
+    ):
+        def _test_function(**kwargs):
+            return kwargs
+
+        tool_fn = get_tool_function_with_dynamic_parameters(
+            _test_function,
+            inputs={
+                'param_1': {
+                    'type': 'str',
+                    'default': 'default_value_1',
+                    'enum': ['value_1', 'value_2'],
+                    'title': 'Parameter 1',
+                    'description': 'Description of parameter 1'
+                }
+            }
+        )
+        meta = func_metadata(tool_fn)
+        properties_dict = meta.arg_model.model_json_schema()['properties']
+        assert properties_dict == {
+            'param_1': {
+                'type': 'string',
+                'default': 'default_value_1',
+                'enum': ['value_1', 'value_2'],
+                'title': 'Parameter 1',
+                'description': 'Description of parameter 1'
+            }
+        }
+
 
 class TestFromPythonClassConfig:
     def test_should_load_from_class(self):

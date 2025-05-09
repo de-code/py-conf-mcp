@@ -6,6 +6,8 @@ import inspect
 import logging
 from typing import Any, Callable, Literal, Mapping, Optional, Sequence
 
+import pydantic
+
 from py_conf_mcp.config import (
     FromPythonClassConfig,
     FromPythonFunctionConfig,
@@ -90,7 +92,11 @@ def get_inspect_parameter_for_input_config_dict(
         annotation=get_inspect_parameter_annotation_for_input_config_dict(
             input_config_dict
         ),
-        default=input_config_dict.get('default', inspect.Parameter.empty)
+        default=pydantic.Field(
+            input_config_dict.get('default', ...),
+            title=input_config_dict.get('title'),
+            description=input_config_dict.get('description')
+        )
     )
 
 

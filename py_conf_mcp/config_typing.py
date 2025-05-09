@@ -5,6 +5,8 @@ class InputConfigDict(TypedDict):
     type: Any
     default: NotRequired[Any]
     enum: NotRequired[Sequence[Any]]
+    title: NotRequired[str]
+    description: NotRequired[str]
 
 
 class FromPythonFunctionConfigDict(TypedDict):
