@@ -51,7 +51,12 @@ class TestGetToolFunctionWithDynamicParameters:
 
         tool_fn = get_tool_function_with_dynamic_parameters(
             _test_function,
-            inputs={'param_1': {'type': 'str', 'default': 'default_value_1'}}
+            inputs={
+                'param_1': {
+                    'type': 'str',
+                    'default': 'default_value_1'
+                }
+            }
         )
         meta = func_metadata(tool_fn)
         properties_dict = meta.arg_model.model_json_schema()['properties']
