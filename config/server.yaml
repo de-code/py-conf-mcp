@@ -44,6 +44,7 @@ toolDefinitions:
         type:
           type: str
           default: 'single'
+          title: Joke Type
           enum:
             - single
             - twopart
