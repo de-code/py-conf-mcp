@@ -4,7 +4,7 @@ import functools
 import importlib
 import inspect
 import logging
-from typing import Any, Callable, Literal, Mapping, Optional, Sequence
+from typing import Annotated, Any, Callable, Literal, Mapping, Optional, Sequence
 
 import pydantic
 
@@ -86,23 +86,28 @@ def get_inspect_parameter_for_input_config_dict(
     input_name: str,
     input_config_dict: InputConfigDict
 ) -> inspect.Parameter:
+    param_type = get_inspect_parameter_annotation_for_input_config_dict(
+        input_config_dict
+    )
+
+    field = pydantic.Field(
+        title=input_config_dict.get('title'),
+        description=input_config_dict.get('description'),
+        default=input_config_dict.get('default', ...)
+    )
+
     return inspect.Parameter(
         name=input_name,
         kind=inspect.Parameter.KEYWORD_ONLY,
-        annotation=get_inspect_parameter_annotation_for_input_config_dict(
-            input_config_dict
-        ),
-        default=pydantic.Field(
-            input_config_dict.get('default', ...),
-            title=input_config_dict.get('title'),
-            description=input_config_dict.get('description')
-        )
+        annotation=Annotated[param_type, field],
+        default=input_config_dict.get('default', inspect.Parameter.empty)
     )
 
 
 def get_tool_function_with_dynamic_parameters(
     tool_fn: Callable,
-    inputs: Mapping[str, InputConfigDict]
+    inputs: Mapping[str, InputConfigDict],
+    tool_name: str
 ) -> Callable:
     LOGGER.info('inputs: %r', inputs)
 
@@ -119,6 +124,22 @@ def get_tool_function_with_dynamic_parameters(
     ]
     wrapper.__signature__ = inspect.Signature(parameters)  # type: ignore[attr-defined]
 
+    annotations = {}
+    for param in parameters:
+        annotations[param.name] = param.annotation
+    LOGGER.debug('annotations: %r', annotations)
+    wrapper.__annotations__ = annotations  # type: ignore[attr-defined]
+
+    model = pydantic.create_model(  # type: ignore
+        f"{tool_name}_Inputs",
+        **{name: (annotation, ...) for name, annotation in annotations.items()}
+    )
+    json_schema = model.model_json_schema()
+
+    LOGGER.debug('json_schema: %r', json_schema)
+
+    wrapper.__get_pydantic_json_schema__ = lambda *_: json_schema  # type: ignore[attr-defined]
+
     return wrapper
 
 
@@ -129,12 +150,18 @@ def get_tool_from_python_class(
     tool_class = getattr(tool_module, config.class_name)
     assert isinstance(tool_class, type)
     tool_fn = tool_class(**config.init_parameters)
-    tool_fn.__name__ = config.name
+
+    try:
+        tool_fn = tool_fn.__call__
+    except AttributeError:
+        pass
+
     assert callable(tool_fn)
     if config.inputs:
         tool_fn = get_tool_function_with_dynamic_parameters(
             tool_fn,
-            config.inputs
+            config.inputs,
+            tool_name=config.name
         )
     return Tool(
         tool_fn=tool_fn,

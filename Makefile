@@ -70,7 +70,7 @@ dev-watch:
 dev-test: dev-lint dev-unit-tests
 
 
-dev-start:
+dev-start-sse:
 	CONFIG_FILE=config/server.yaml \
 		$(PYTHON) -m py_conf_mcp \
 			--transport=sse \
@@ -78,7 +78,15 @@ dev-start:
 			--port=8080
 
 
-dev-mcp-inspect-cli:
+dev-start-streamable-http:
+	CONFIG_FILE=config/server.yaml \
+		$(PYTHON) -m py_conf_mcp \
+			--transport=streamable-http \
+			--host=localhost \
+			--port=8080
+
+
+dev-mcp-inspect-cli-sse:
 	npx @modelcontextprotocol/inspector \
 		--cli \
 		'http://localhost:8080' \

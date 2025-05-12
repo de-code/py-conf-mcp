@@ -16,7 +16,7 @@ def create_mcp_for_app_config(app_config: AppConfig) -> FastMCP:
     tools = tool_resolver.get_tools_by_name(app_config.server.tools)
     LOGGER.info('Tools: %r', tools)
 
-    mcp: FastMCP = FastMCP(app_config.server.name)
+    mcp: FastMCP = FastMCP(app_config.server.name, stateless_http=True)
 
     for tool in tools:
         mcp.add_tool(
@@ -35,7 +35,12 @@ def create_mcp() -> FastMCP:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='MCP CLI')
-    parser.add_argument('--transport', type=str, default='stdio', choices=['sse', 'stdio'])
+    parser.add_argument(
+        '--transport',
+        type=str,
+        default='stdio',
+        choices=['sse', 'stdio', 'streamable-http']
+    )
     parser.add_argument('--host', type=str, default='localhost')
     parser.add_argument('--port', type=int, default=8080)
     return parser.parse_args()
