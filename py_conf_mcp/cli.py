@@ -35,7 +35,12 @@ def create_mcp() -> FastMCP:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='MCP CLI')
-    parser.add_argument('--transport', type=str, default='stdio', choices=['sse', 'stdio'])
+    parser.add_argument(
+        '--transport',
+        type=str,
+        default='stdio',
+        choices=['sse', 'stdio', 'streamable-http']
+    )
     parser.add_argument('--host', type=str, default='localhost')
     parser.add_argument('--port', type=int, default=8080)
     return parser.parse_args()
