@@ -1,8 +1,9 @@
 import logging
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping, Optional, TypedDict
 
 import jinja2
 import requests
+import requests.auth
 
 from py_conf_mcp.tools.typing import ToolClass
 
@@ -29,6 +30,22 @@ def get_evaluated_query_parameters(
     }
 
 
+class BasicAuthConfig(TypedDict):
+    username: str
+    password: str
+
+
+def get_requests_auth(
+    basic_auth: Optional[BasicAuthConfig]
+) -> Optional[requests.auth.HTTPBasicAuth]:
+    if not basic_auth:
+        return None
+    return requests.auth.HTTPBasicAuth(
+        username=basic_auth['username'],
+        password=basic_auth['password']
+    )
+
+
 class WebApiTool(ToolClass):
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -37,7 +54,8 @@ class WebApiTool(ToolClass):
         query_parameters: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
         method: str = 'GET',
-        verify_ssl: bool = True
+        verify_ssl: bool = True,
+        basic_auth: Optional[BasicAuthConfig] = None
     ):
         super().__init__()
         self.url = url
@@ -45,6 +63,7 @@ class WebApiTool(ToolClass):
         self.method = method
         self.verify_ssl = verify_ssl
         self.headers = headers
+        self.auth = get_requests_auth(basic_auth)
 
     def __call__(self, **kwargs):
         session = get_requests_session()
@@ -62,6 +81,7 @@ class WebApiTool(ToolClass):
             url=url,
             params=params,
             headers=self.headers,
+            auth=self.auth,
             verify=self.verify_ssl
         )
         response.raise_for_status()

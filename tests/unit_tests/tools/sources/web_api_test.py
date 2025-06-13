@@ -55,6 +55,7 @@ class TestWebApiTool:
             url=URL_1,
             params=ANY,
             headers=HEADERS_1,
+            auth=ANY,
             verify=ANY
         )
 
@@ -77,6 +78,7 @@ class TestWebApiTool:
             url=r'https://example/url_1?param_1=value_1',
             params=ANY,
             headers=ANY,
+            auth=ANY,
             verify=ANY
         )
 
@@ -96,5 +98,6 @@ class TestWebApiTool:
             url=r'https://example/url_1',
             params={'param_1': 'value_1'},
             headers=ANY,
+            auth=ANY,
             verify=ANY
         )
