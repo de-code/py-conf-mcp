@@ -90,8 +90,9 @@ class WebApiTool(ToolClass):
         )
         LOGGER.info(
             'url: %r (method: %r, params: %r, kwargs: %r, has_json_body: %r)',
-            url, self.method, params, kwargs, bool(self.json_template)
+            url, self.method, params, kwargs, bool(json_body)
         )
+        LOGGER.info('json_body: %r', json_body)
         response = session.request(
             method=self.method,
             url=url,
