@@ -30,17 +30,20 @@ def get_evaluated_query_parameters(
 
 
 class WebApiTool(ToolClass):
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         url: str,
+        *,
         query_parameters: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
-        method: str = 'GET'
+        method: str = 'GET',
+        verify_ssl: bool = True
     ):
         super().__init__()
         self.url = url
         self.query_parameters = query_parameters or {}
         self.method = method
+        self.verify_ssl = verify_ssl
         self.headers = headers
 
     def __call__(self, **kwargs):
@@ -58,7 +61,8 @@ class WebApiTool(ToolClass):
             method=self.method,
             url=url,
             params=params,
-            headers=self.headers
+            headers=self.headers,
+            verify=self.verify_ssl
         )
         response.raise_for_status()
         response_json = response.json()

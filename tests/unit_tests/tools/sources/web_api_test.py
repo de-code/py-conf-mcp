@@ -54,7 +54,8 @@ class TestWebApiTool:
             method='POST',
             url=URL_1,
             params=ANY,
-            headers=HEADERS_1
+            headers=HEADERS_1,
+            verify=ANY
         )
 
     def test_should_return_response_from_api(self, requests_response_mock: MagicMock):
@@ -75,7 +76,8 @@ class TestWebApiTool:
             method='GET',
             url=r'https://example/url_1?param_1=value_1',
             params=ANY,
-            headers=ANY
+            headers=ANY,
+            verify=ANY
         )
 
     def test_should_replace_placeholders_in_query_parameters(
@@ -93,5 +95,6 @@ class TestWebApiTool:
             method='GET',
             url=r'https://example/url_1',
             params={'param_1': 'value_1'},
-            headers=ANY
+            headers=ANY,
+            verify=ANY
         )
