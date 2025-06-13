@@ -157,7 +157,7 @@ def get_tool_from_python_class(
         pass
 
     assert callable(tool_fn)
-    if config.inputs:
+    if config.inputs is not None:
         tool_fn = get_tool_function_with_dynamic_parameters(
             tool_fn,
             config.inputs,

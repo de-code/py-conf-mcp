@@ -26,6 +26,15 @@ FROM_PYTHON_CLASS_CONFIG_1 = FromPythonClassConfig(
     }
 )
 
+KWARGS_FROM_PYTHON_CLASS_CONFIG_1 = FromPythonClassConfig(
+    name='fetch_web_api',
+    module='py_conf_mcp.tools.sources.web_api',
+    class_name='WebApiTool',
+    init_parameters={
+        'url': 'Dummy URL'
+    }
+)
+
 
 DEFAULT_TOOL_DEFINITIONS_CONFIG: ToolDefinitionsConfig = ToolDefinitionsConfig(
     from_python_function=[
@@ -145,6 +154,17 @@ class TestFromPythonClassConfig:
         mcp_tool = Tool.from_function(tool.tool_fn)
         properties_dict = mcp_tool.parameters['properties']
         assert properties_dict.keys() == {'param_1'}
+
+    def test_should_create_wrapper_if_dynamic_parameters_are_empty_and_fn_accepts_kwargs(
+        self
+    ):
+        tool = get_tool_from_python_class(dataclasses.replace(
+            KWARGS_FROM_PYTHON_CLASS_CONFIG_1,
+            inputs={}
+        ))
+        mcp_tool = Tool.from_function(tool.tool_fn)
+        properties_dict = mcp_tool.parameters['properties']
+        assert not properties_dict
 
 
 class TestConfigToolResolver:
