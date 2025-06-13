@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Any, Mapping, Optional, TypedDict
 
@@ -30,6 +31,15 @@ def get_evaluated_query_parameters(
     }
 
 
+def get_optional_evaluated_json_body(
+    json_template: Optional[str],
+    variables: Mapping[str, Any]
+) -> Optional[Any]:
+    if json_template is None:
+        return None
+    return json.loads(get_evaluated_template(json_template, variables))
+
+
 class BasicAuthConfig(TypedDict):
     username: str
     password: str
@@ -52,6 +62,7 @@ class WebApiTool(ToolClass):
         url: str,
         *,
         query_parameters: Optional[Mapping[str, str]] = None,
+        json_template: Optional[str] = None,
         headers: Optional[Mapping[str, str]] = None,
         method: str = 'GET',
         verify_ssl: bool = True,
@@ -60,6 +71,7 @@ class WebApiTool(ToolClass):
         super().__init__()
         self.url = url
         self.query_parameters = query_parameters or {}
+        self.json_template = json_template
         self.method = method
         self.verify_ssl = verify_ssl
         self.headers = headers
@@ -72,9 +84,13 @@ class WebApiTool(ToolClass):
             self.query_parameters,
             kwargs
         )
+        json_body = get_optional_evaluated_json_body(
+            self.json_template,
+            kwargs
+        )
         LOGGER.info(
-            'url: %r (method: %r, params: %r, kwargs: %r)',
-            url, self.method, params, kwargs
+            'url: %r (method: %r, params: %r, kwargs: %r, has_json_body: %r)',
+            url, self.method, params, kwargs, bool(self.json_template)
         )
         response = session.request(
             method=self.method,
@@ -82,7 +98,8 @@ class WebApiTool(ToolClass):
             params=params,
             headers=self.headers,
             auth=self.auth,
-            verify=self.verify_ssl
+            verify=self.verify_ssl,
+            json=json_body
         )
         response.raise_for_status()
         response_json = response.json()

@@ -1,3 +1,4 @@
+import json
 from typing import Iterator
 from unittest.mock import ANY, MagicMock, patch
 
@@ -56,7 +57,8 @@ class TestWebApiTool:
             params=ANY,
             headers=HEADERS_1,
             auth=ANY,
-            verify=ANY
+            verify=ANY,
+            json=ANY
         )
 
     def test_should_return_response_from_api(self, requests_response_mock: MagicMock):
@@ -79,7 +81,8 @@ class TestWebApiTool:
             params=ANY,
             headers=ANY,
             auth=ANY,
-            verify=ANY
+            verify=ANY,
+            json=ANY
         )
 
     def test_should_replace_placeholders_in_query_parameters(
@@ -99,5 +102,6 @@ class TestWebApiTool:
             params={'param_1': 'value_1'},
             headers=ANY,
             auth=ANY,
-            verify=ANY
+            verify=ANY,
+            json=ANY
         )
