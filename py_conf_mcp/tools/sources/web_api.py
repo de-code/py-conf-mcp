@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from typing import Any, Mapping, Optional, TypedDict
 
 import jinja2
@@ -50,9 +51,18 @@ def get_requests_auth(
 ) -> Optional[requests.auth.HTTPBasicAuth]:
     if not basic_auth:
         return None
+    variables = {
+        'env': os.environ
+    }
     return requests.auth.HTTPBasicAuth(
-        username=basic_auth['username'],
-        password=basic_auth['password']
+        username=get_evaluated_template(
+            basic_auth['username'],
+            variables=variables
+        ),
+        password=get_evaluated_template(
+            basic_auth['password'],
+            variables=variables
+        )
     )
 
 

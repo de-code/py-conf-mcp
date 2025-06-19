@@ -52,6 +52,21 @@ class TestGetRequestsAuth:
         assert auth.username == 'user'
         assert auth.password == 'pass'
 
+    def test_should_return_http_basic_auth_from_env_var(
+        self,
+        mock_env: dict[str, str]
+    ):
+        mock_env['BASIC_AUTH_USERNAME'] = 'user'
+        mock_env['BASIC_AUTH_PASSWORD'] = 'pass'
+        basic_auth: BasicAuthConfig = {
+            'username': '{{ env.BASIC_AUTH_USERNAME }}',
+            'password': '{{ env.BASIC_AUTH_PASSWORD }}'
+        }
+        auth = web_api.get_requests_auth(basic_auth)
+        assert isinstance(auth, requests.auth.HTTPBasicAuth)
+        assert auth.username == 'user'
+        assert auth.password == 'pass'
+
 
 class TestWebApiTool:
     def test_should_pass_method_url_and_headers_to_api(
