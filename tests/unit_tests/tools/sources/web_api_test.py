@@ -1,11 +1,13 @@
 from typing import Iterator
 from unittest.mock import ANY, MagicMock, patch
+from pathlib import Path
 
 import pytest
 import requests
+import requests.auth
 
 from py_conf_mcp.tools.sources import web_api
-from py_conf_mcp.tools.sources.web_api import WebApiTool
+from py_conf_mcp.tools.sources.web_api import BasicAuthConfig, WebApiTool
 
 
 URL_1 = 'https://example/url_1'
@@ -36,7 +38,55 @@ def _requests_request_fn_mock(requests_session_mock: MagicMock) -> MagicMock:
 def _requests_mock(requests_session_mock: MagicMock) -> Iterator[MagicMock]:
     with patch.object(web_api, 'requests') as mock:
         mock.Session.return_value = requests_session_mock
+        mock.auth = requests.auth
         yield mock
+
+
+class TestGetRequestsAuth:
+    def test_should_return_none_if_no_basic_auth(self):
+        assert web_api.get_requests_auth(None) is None
+
+    def test_should_return_http_basic_auth_from_values(self):
+        basic_auth: BasicAuthConfig = {'username': 'user', 'password': 'pass'}
+        auth = web_api.get_requests_auth(basic_auth)
+        assert isinstance(auth, requests.auth.HTTPBasicAuth)
+        assert auth.username == 'user'
+        assert auth.password == 'pass'
+
+    def test_should_return_http_basic_auth_from_env_var(
+        self,
+        mock_env: dict[str, str]
+    ):
+        mock_env['BASIC_AUTH_USERNAME'] = 'user'
+        mock_env['BASIC_AUTH_PASSWORD'] = 'pass'
+        basic_auth: BasicAuthConfig = {
+            'username': '{{ env.BASIC_AUTH_USERNAME }}',
+            'password': '{{ env.BASIC_AUTH_PASSWORD }}'
+        }
+        auth = web_api.get_requests_auth(basic_auth)
+        assert isinstance(auth, requests.auth.HTTPBasicAuth)
+        assert auth.username == 'user'
+        assert auth.password == 'pass'
+
+    def test_should_return_http_basic_auth_from_env_var_file(
+        self,
+        mock_env: dict[str, str],
+        tmp_path: Path
+    ):
+        username_file_path = tmp_path / 'username.txt'
+        password_file_path = tmp_path / 'password.txt'
+        username_file_path.write_text('user', encoding='utf-8')
+        password_file_path.write_text('pass', encoding='utf-8')
+        mock_env['USERNAME_FILE_PATH'] = str(username_file_path)
+        mock_env['PASSWORD_FILE_PATH'] = str(password_file_path)
+        basic_auth: BasicAuthConfig = {
+            'username': '{{ read_secret_from_env("USERNAME_FILE_PATH") }}',
+            'password': '{{ read_secret_from_env("PASSWORD_FILE_PATH") }}'
+        }
+        auth = web_api.get_requests_auth(basic_auth)
+        assert isinstance(auth, requests.auth.HTTPBasicAuth)
+        assert auth.username == 'user'
+        assert auth.password == 'pass'
 
 
 class TestWebApiTool:
@@ -54,7 +104,10 @@ class TestWebApiTool:
             method='POST',
             url=URL_1,
             params=ANY,
-            headers=HEADERS_1
+            headers=HEADERS_1,
+            auth=ANY,
+            verify=ANY,
+            json=ANY
         )
 
     def test_should_return_response_from_api(self, requests_response_mock: MagicMock):
@@ -75,7 +128,10 @@ class TestWebApiTool:
             method='GET',
             url=r'https://example/url_1?param_1=value_1',
             params=ANY,
-            headers=ANY
+            headers=ANY,
+            auth=ANY,
+            verify=ANY,
+            json=ANY
         )
 
     def test_should_replace_placeholders_in_query_parameters(
@@ -93,5 +149,8 @@ class TestWebApiTool:
             method='GET',
             url=r'https://example/url_1',
             params={'param_1': 'value_1'},
-            headers=ANY
+            headers=ANY,
+            auth=ANY,
+            verify=ANY,
+            json=ANY
         )
