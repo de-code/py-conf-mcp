@@ -3,9 +3,10 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
+import requests.auth
 
 from py_conf_mcp.tools.sources import web_api
-from py_conf_mcp.tools.sources.web_api import WebApiTool
+from py_conf_mcp.tools.sources.web_api import BasicAuthConfig, WebApiTool
 
 
 URL_1 = 'https://example/url_1'
@@ -36,7 +37,20 @@ def _requests_request_fn_mock(requests_session_mock: MagicMock) -> MagicMock:
 def _requests_mock(requests_session_mock: MagicMock) -> Iterator[MagicMock]:
     with patch.object(web_api, 'requests') as mock:
         mock.Session.return_value = requests_session_mock
+        mock.auth = requests.auth
         yield mock
+
+
+class TestGetRequestsAuth:
+    def test_should_return_none_if_no_basic_auth(self):
+        assert web_api.get_requests_auth(None) is None
+
+    def test_should_return_http_basic_auth_from_values(self):
+        basic_auth: BasicAuthConfig = {'username': 'user', 'password': 'pass'}
+        auth = web_api.get_requests_auth(basic_auth)
+        assert isinstance(auth, requests.auth.HTTPBasicAuth)
+        assert auth.username == 'user'
+        assert auth.password == 'pass'
 
 
 class TestWebApiTool:
