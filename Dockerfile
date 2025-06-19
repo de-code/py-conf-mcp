@@ -23,4 +23,4 @@ COPY setup.cfg pyproject.toml ./
 
 ENV CONFIG_FILE=./config/server.yaml
 
-CMD ["python3", "-m", "py_conf_mcp", "--transport=sse", "--host=0.0.0.0", "--port=8080"]
+CMD ["python3", "-m", "py_conf_mcp", "--transport=streamable-http", "--host=0.0.0.0", "--port=8080"]
