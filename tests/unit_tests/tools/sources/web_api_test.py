@@ -1,4 +1,3 @@
-import json
 from typing import Iterator
 from unittest.mock import ANY, MagicMock, patch
 
