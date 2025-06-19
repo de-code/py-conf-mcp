@@ -46,13 +46,13 @@ dev-venv: venv-create dev-install
 
 
 dev-flake8:
-	$(PYTHON) -m flake8 py_conf_mcp
+	$(PYTHON) -m flake8 py_conf_mcp tests
 
 dev-pylint:
-	$(PYTHON) -m pylint py_conf_mcp
+	$(PYTHON) -m pylint py_conf_mcp tests
 
 dev-mypy:
-	$(PYTHON) -m mypy --check-untyped-defs py_conf_mcp
+	$(PYTHON) -m mypy --check-untyped-defs py_conf_mcp tests
 
 dev-lint: dev-flake8 dev-pylint dev-mypy
 
@@ -103,15 +103,15 @@ build:
 
 flake8:
 	$(DOCKER_COMPOSE) run --rm py-conf-mcp \
-		python3 -m flake8 py_conf_mcp
+		python3 -m flake8 py_conf_mcp tests
 
 pylint:
 	$(DOCKER_COMPOSE) run --rm py-conf-mcp \
-		python3 -m pylint py_conf_mcp
+		python3 -m pylint py_conf_mcp tests
 
 mypy:
 	$(DOCKER_COMPOSE) run --rm py-conf-mcp \
-		python3 -m mypy --check-untyped-defs py_conf_mcp
+		python3 -m mypy --check-untyped-defs py_conf_mcp tests
 
 lint: flake8 pylint mypy
 
