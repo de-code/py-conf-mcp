@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from pathlib import Path
 from typing import Any, Mapping, Optional, TypedDict
 
 import jinja2
@@ -17,8 +18,14 @@ def get_requests_session() -> requests.Session:
     return requests.Session()
 
 
+def read_secret_from_env(var_name: str) -> str:
+    path = os.environ[var_name]
+    return Path(path).read_text(encoding='utf-8')
+
+
 def get_evaluated_template(template: str, variables: Mapping[str, Any]) -> Any:
     compiled_template = jinja2.Template(template)
+    compiled_template.globals['read_secret_from_env'] = read_secret_from_env
     return compiled_template.render(variables)
 
 

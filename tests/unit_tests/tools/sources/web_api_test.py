@@ -1,5 +1,6 @@
 from typing import Iterator
 from unittest.mock import ANY, MagicMock, patch
+from pathlib import Path
 
 import pytest
 import requests
@@ -61,6 +62,26 @@ class TestGetRequestsAuth:
         basic_auth: BasicAuthConfig = {
             'username': '{{ env.BASIC_AUTH_USERNAME }}',
             'password': '{{ env.BASIC_AUTH_PASSWORD }}'
+        }
+        auth = web_api.get_requests_auth(basic_auth)
+        assert isinstance(auth, requests.auth.HTTPBasicAuth)
+        assert auth.username == 'user'
+        assert auth.password == 'pass'
+
+    def test_should_return_http_basic_auth_from_env_var_file(
+        self,
+        mock_env: dict[str, str],
+        tmp_path: Path
+    ):
+        username_file_path = tmp_path / 'username.txt'
+        password_file_path = tmp_path / 'password.txt'
+        username_file_path.write_text('user', encoding='utf-8')
+        password_file_path.write_text('pass', encoding='utf-8')
+        mock_env['USERNAME_FILE_PATH'] = str(username_file_path)
+        mock_env['PASSWORD_FILE_PATH'] = str(password_file_path)
+        basic_auth: BasicAuthConfig = {
+            'username': '{{ read_secret_from_env("USERNAME_FILE_PATH") }}',
+            'password': '{{ read_secret_from_env("PASSWORD_FILE_PATH") }}'
         }
         auth = web_api.get_requests_auth(basic_auth)
         assert isinstance(auth, requests.auth.HTTPBasicAuth)
