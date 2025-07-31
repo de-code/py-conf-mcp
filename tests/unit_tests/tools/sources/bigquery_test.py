@@ -4,7 +4,7 @@ from unittest.mock import ANY, MagicMock, patch
 import pytest
 
 from py_conf_mcp.tools.sources import bigquery
-from py_conf_mcp.tools.sources.bigquery import BigQueryTool
+from py_conf_mcp.tools.sources.bigquery import BigQueryTool, toquoted
 from py_conf_mcp.utils.json import get_json_as_csv_lines
 
 
@@ -31,6 +31,18 @@ def _iter_dict_from_bq_query_mock() -> Iterator[MagicMock]:
 def _get_json_as_csv_lines_mock() -> Iterator[MagicMock]:
     with patch.object(bigquery, 'get_json_as_csv_lines') as mock:
         yield mock
+
+
+class TestToQuoted:
+    def test_should_fail_if_none(self):
+        with pytest.raises(ValueError):
+            toquoted(None)  # type: ignore
+
+    def test_should_add_single_quotes(self):
+        assert toquoted('test') == "'test'"
+
+    def test_should_escape_single_quotes(self):
+        assert toquoted('t\'est') == "'t\\'est'"
 
 
 class TestBigQueryTool:

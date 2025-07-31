@@ -12,6 +12,12 @@ from py_conf_mcp.utils.json import get_json_as_csv_lines
 LOGGER = logging.getLogger(__name__)
 
 
+def toquoted(value: str) -> str:
+    if value is None:
+        raise ValueError('value must not be none')
+    return "'" + value.replace("'", "\\'") + "'"
+
+
 def get_evaluated_template(template: str, variables: Mapping[str, Any]) -> Any:
     compiled_template = jinja2.Template(template)
     return compiled_template.render(variables)
