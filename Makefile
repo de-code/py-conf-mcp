@@ -93,6 +93,14 @@ dev-mcp-inspect-cli-sse:
 		--method "$(MCP_METHOD)"
 
 
+dev-start-streamable-http-local-config:
+	CONFIG_FILE=config/local-server.yaml \
+		$(PYTHON) -m py_conf_mcp \
+			--transport=streamable-http \
+			--host=localhost \
+			--port=8080
+
+
 dev-mcp-inspect-ui:
 	npx @modelcontextprotocol/inspector
 
