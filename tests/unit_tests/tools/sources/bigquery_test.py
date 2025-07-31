@@ -1,5 +1,5 @@
 from typing import Iterator
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 
@@ -40,12 +40,28 @@ class TestBigQueryTool:
     ):
         tool = BigQueryTool(
             project_name=PROJECT_NAME_1,
-            sql_query=SQL_QUERY_1
+            sql_query=SQL_QUERY_1,
+            is_sql_query_template=False
         )
         tool()
         iter_dict_from_bq_query_mock.assert_called_with(
             project_name=PROJECT_NAME_1,
             query=SQL_QUERY_1
+        )
+
+    def test_should_replace_placeholders_in_sql_query(
+        self,
+        iter_dict_from_bq_query_mock: MagicMock
+    ):
+        tool = BigQueryTool(
+            project_name=PROJECT_NAME_1,
+            sql_query='SELECT {{ param_1 }}',
+            is_sql_query_template=True
+        )
+        tool(param_1='value_1')
+        iter_dict_from_bq_query_mock.assert_called_with(
+            project_name=ANY,
+            query='SELECT value_1'
         )
 
     def test_should_return_query_results_as_json(
