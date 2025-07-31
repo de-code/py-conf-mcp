@@ -19,7 +19,9 @@ def toquoted(value: str) -> str:
 
 
 def get_evaluated_template(template: str, variables: Mapping[str, Any]) -> Any:
-    compiled_template = jinja2.Template(template)
+    env = jinja2.Environment()
+    env.filters['toquoted'] = toquoted
+    compiled_template = env.from_string(template)
     return compiled_template.render(variables)
 
 
