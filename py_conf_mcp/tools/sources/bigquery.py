@@ -1,14 +1,28 @@
 import logging
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 from google.cloud import bigquery
 from google.cloud.bigquery.table import RowIterator
+import jinja2
 
 from py_conf_mcp.tools.typing import ToolClass
 from py_conf_mcp.utils.json import get_json_as_csv_lines
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+def toquoted(value: str) -> str:
+    if value is None:
+        raise ValueError('value must not be none')
+    return "'" + value.replace("'", "\\'") + "'"
+
+
+def get_evaluated_template(template: str, variables: Mapping[str, Any]) -> Any:
+    env = jinja2.Environment()
+    env.filters['toquoted'] = toquoted
+    compiled_template = env.from_string(template)
+    return compiled_template.render(variables)
 
 
 def get_bq_client(project_name: str) -> bigquery.Client:
@@ -49,17 +63,26 @@ class BigQueryTool(ToolClass):  # pylint: disable=too-many-instance-attributes
         *,
         project_name: str,
         sql_query: str,
+        is_sql_query_template: bool = True,
         output_format: str = 'json'
     ):
         super().__init__()
         self.project_name = project_name
         self.sql_query = sql_query
+        self.is_sql_query_template = is_sql_query_template
         self.output_format = output_format
 
     def __call__(self, **kwargs):
+        sql_query = self.sql_query
+        if self.is_sql_query_template:
+            sql_query = get_evaluated_template(
+                sql_query,
+                variables=kwargs
+            )
+        LOGGER.info('Running BigQuery SQL: %r', sql_query)
         result: Any = list(iter_dict_from_bq_query(
             project_name=self.project_name,
-            query=self.sql_query
+            query=sql_query
         ))
         if self.output_format == 'csv':
             result = '\n'.join(get_json_as_csv_lines(result))
