@@ -79,12 +79,16 @@ class BigQueryTool(ToolClass):  # pylint: disable=too-many-instance-attributes
                 sql_query,
                 variables=kwargs
             )
-        LOGGER.info('Running BigQuery SQL: %r', sql_query)
-        result: Any = list(iter_dict_from_bq_query(
-            project_name=self.project_name,
-            query=sql_query
-        ))
-        if self.output_format == 'csv':
-            result = '\n'.join(get_json_as_csv_lines(result))
-        LOGGER.info('query results: %r', result)
+        try:
+            LOGGER.info('Running BigQuery SQL:\n```sql\n%s\n```', sql_query)
+            result: Any = list(iter_dict_from_bq_query(
+                project_name=self.project_name,
+                query=sql_query
+            ))
+            if self.output_format == 'csv':
+                result = '\n'.join(get_json_as_csv_lines(result))
+            LOGGER.info('query results: %r', result)
+        except Exception as exc:
+            LOGGER.warning('Failed to run BigQuery SQL due to %r', exc, exc_info=True)
+            raise
         return result
